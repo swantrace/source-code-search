@@ -1,0 +1,39 @@
+{
+  "name": "source-code-search",
+  "version": "1.0.0",
+  "description": "Command-line tool for searching through source code files",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "USAGE.md"
+  ],
+  "bin": {
+    "codesearch": "./dist/cli.js",
+    "cs": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/src/index.js",
+    "dev": "tsc --watch",
+    "cli": "npm run build && node dist/cli.js",
+    "search": "npm run build && node dist/cli.js",
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "nodejs",
+    "typescript",
+    "builtin-modules"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.2.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
