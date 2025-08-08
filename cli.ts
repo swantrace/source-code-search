@@ -4,11 +4,16 @@ import { createFinder } from "./src/index";
 import { parseArgs } from "node:util";
 import { CliOptions } from "./src/types";
 import { showHelp } from "./src/help";
-import { parseFileTypes, parseExcludes, createSearchRegex } from "./src/parsers";
+import {
+  parseFileTypes,
+  parseExcludes,
+  createSearchRegex,
+} from "./src/parsers";
 import { validateDirectory } from "./src/utils";
 import { performSearch } from "./src/search-orchestrator";
 
 async function main() {
+  let finder;
   try {
     const { values, positionals } = parseArgs({
       args: process.argv.slice(2),
@@ -61,7 +66,7 @@ async function main() {
     }
 
     const fileTypeRegex = parseFileTypes(options.fileTypes || "");
-    const finder = createFinder({
+    finder = createFinder({
       excludeDirectories: excludes,
       fileTypeFilter: fileTypeRegex,
       nameOnly: options.nameOnly,
@@ -75,6 +80,10 @@ async function main() {
       `❌ Error: ${error instanceof Error ? error.message : error}`
     );
     process.exit(1);
+  } finally {
+    if (finder) {
+      finder.removeAllListeners(); // Clean up event listeners
+    }
   }
 }
 

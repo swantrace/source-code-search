@@ -132,5 +132,8 @@ export function createFinder(options?: SearchOptions) {
     onSearchProgress: (callback: (progress: SearchProgress) => void) => {
       emitter.on("searchProgress", callback);
     },
+    removeAllListeners: () => {
+      emitter.removeAllListeners();
+    },
   };
 }

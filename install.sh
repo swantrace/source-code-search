@@ -34,7 +34,7 @@ if [ -n "$1" ]; then
     # If GitHub URL is provided as argument
     git clone "$1" source-code-search
 else
-    echo "Usage: $0 <github-repo-url>"
+    echo "Usage: $0 https://github.com/swantrace/source-code-search.git"
     echo "Example: $0 https://github.com/username/source-code-search.git"
     exit 1
 fi

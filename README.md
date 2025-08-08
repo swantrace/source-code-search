@@ -24,7 +24,7 @@ npm install -g source-code-search
 ### From Source
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/swantrace/source-code-search.git
 cd source-code-search
 npm install
 npm run build
@@ -34,7 +34,7 @@ npm link
 ### Quick Install Script
 
 ```bash
-curl -sSL <install-script-url> | bash
+curl -sSL https://raw.githubusercontent.com/swantrace/source-code-search/main/install.sh | bash
 ```
 
 ## 🚀 Usage
