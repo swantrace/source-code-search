@@ -20,7 +20,6 @@ async function main() {
       options: {
         "file-types": { type: "string", short: "t" },
         "name-only": { type: "boolean", short: "n" },
-        "content-only": { type: "boolean", short: "c" },
         "ignore-case": { type: "boolean", short: "i" },
         verbose: { type: "boolean", short: "v" },
         exclude: { type: "string", short: "e" },
@@ -32,7 +31,6 @@ async function main() {
     const options: CliOptions = {
       fileTypes: values["file-types"],
       nameOnly: values["name-only"],
-      contentOnly: values["content-only"],
       ignoreCase: values["ignore-case"],
       verbose: values["verbose"],
       exclude: values["exclude"],
@@ -61,8 +59,6 @@ async function main() {
 
     if (options.nameOnly) {
       console.log(`🏷️  Mode: Name only`);
-    } else if (options.contentOnly) {
-      console.log(`📄 Mode: Content only`);
     }
 
     const fileTypeRegex = parseFileTypes(options.fileTypes || "");
@@ -70,7 +66,6 @@ async function main() {
       excludeDirectories: excludes,
       fileTypeFilter: fileTypeRegex,
       nameOnly: options.nameOnly,
-      contentOnly: options.contentOnly,
     });
     const searchRegex = createSearchRegex(pattern, options.ignoreCase || false);
 

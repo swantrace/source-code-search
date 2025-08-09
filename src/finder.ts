@@ -1,11 +1,5 @@
 import EventEmitter from "node:events";
-import {
-  FileInfo,
-  SearchOptions,
-  SearchResult,
-  SearchStats,
-  SearchProgress,
-} from "./types";
+import { FileInfo, SearchOptions, SearchResult, SearchProgress } from "./types";
 import { checkContentWithStream } from "./content-search";
 import { collectFiles } from "./file-collector";
 
@@ -14,7 +8,6 @@ export function createFinder(options?: SearchOptions) {
   const excludeDirs = options?.excludeDirectories || [];
   const fileTypeFilter = options?.fileTypeFilter;
   const nameOnly = options?.nameOnly || false;
-  const contentOnly = options?.contentOnly || false;
 
   // Move found results to finder level
   const found: SearchResult = {
@@ -22,48 +15,44 @@ export function createFinder(options?: SearchOptions) {
     byContent: [],
   };
 
-  async function search(regex: RegExp, directory: string = process.cwd()) {
-    // Reset results for new search
-    found.byName = [];
-    found.byContent = [];
+  // Add a cancellation state
+  let isCancelled = false;
 
-    // Phase 1: Collect all files
-    emitter.emit("phase", "collecting");
+  // Private implementation functions
+  async function _collectAndMatchNames(regex: RegExp, directory: string) {
+    // Collect all files
+    emitter.emit("searchStarted", { directory });
     const collectedFiles = await collectFiles(directory, emitter, {
       excludeDirectories: excludeDirs,
       fileTypeFilter,
     });
 
-    // Phase 2: Check filename matches
-    const nameMatches = collectedFiles.filter(
-      (file) => !contentOnly && regex.test(file.name)
-    );
+    // Check filename matches - always do name matching now
+    const nameMatches = collectedFiles.filter((file) => regex.test(file.name));
     found.byName = nameMatches.map((f) => f.path);
 
-    // Emit collection complete with file stats
+    // Emit collection complete with collected files
     emitter.emit("collectionComplete", {
-      totalFiles: collectedFiles.length,
-      totalSize: collectedFiles.reduce((sum, f) => sum + f.size, 0),
-      nameMatches: found.byName.length,
+      collectedFiles,
+      cancel: () => {
+        isCancelled = true;
+      },
     });
 
-    // If name-only mode, we're done
     if (nameOnly) {
       emitter.emit("found", found);
-      return collectedFiles;
     }
 
-    // Return only collectedFiles for content search
     return collectedFiles;
   }
 
-  async function searchContent(
+  async function _searchContent(
     regex: RegExp,
     collectedFiles: FileInfo[],
     maxConcurrency: number = 20
   ) {
     // Phase 3: Content search (with progress and parallelization)
-    emitter.emit("phase", "searching");
+    emitter.emit("contentSearchStarted", { fileCount: collectedFiles.length });
 
     let searchedCount = 0;
     const totalFiles = collectedFiles.length;
@@ -110,10 +99,37 @@ export function createFinder(options?: SearchOptions) {
     emitter.emit("found", found);
   }
 
+  // Public API
+  async function search(
+    regex: RegExp,
+    directory: string = process.cwd(),
+    maxConcurrency: number = 20
+  ) {
+    // Reset cancellation state and results for new search
+    isCancelled = false;
+    found.byName = [];
+    found.byContent = [];
+
+    const collectedFiles = await _collectAndMatchNames(regex, directory);
+
+    // Provide time for collection complete handlers to potentially cancel the search
+    // Wait for all microtasks to finish (which includes promise resolutions from handlers)
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    if (isCancelled || nameOnly || collectedFiles.length === 0) {
+      return found;
+    }
+
+    await _searchContent(regex, collectedFiles, maxConcurrency);
+    return found;
+  }
+
   return {
     search,
-    searchContent,
     found, // Expose found as a property
+    cancel: () => {
+      isCancelled = true;
+    }, // Expose cancel function directly
     onFound: (callback: (found: SearchResult) => void) => {
       emitter.on("found", callback);
     },
@@ -123,11 +139,21 @@ export function createFinder(options?: SearchOptions) {
     onFileFound: (callback: (file: FileInfo) => void) => {
       emitter.on("fileFound", callback);
     },
-    onPhase: (callback: (phase: "collecting" | "searching") => void) => {
-      emitter.on("phase", callback);
+    onSearchStarted: (callback: (info: { directory: string }) => void) => {
+      emitter.on("searchStarted", callback);
     },
-    onCollectionComplete: (callback: (stats: SearchStats) => void) => {
+    onCollectionComplete: (
+      callback: (data: {
+        collectedFiles: FileInfo[];
+        cancel: () => void;
+      }) => void
+    ) => {
       emitter.on("collectionComplete", callback);
+    },
+    onContentSearchStarted: (
+      callback: (info: { fileCount: number }) => void
+    ) => {
+      emitter.on("contentSearchStarted", callback);
     },
     onSearchProgress: (callback: (progress: SearchProgress) => void) => {
       emitter.on("searchProgress", callback);

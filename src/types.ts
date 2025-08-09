@@ -9,7 +9,6 @@ export interface CliOptions {
   directory?: string;
   fileTypes?: string;
   nameOnly?: boolean;
-  contentOnly?: boolean;
   help?: boolean;
   ignoreCase?: boolean;
   verbose?: boolean;
@@ -20,7 +19,6 @@ export interface SearchOptions {
   excludeDirectories?: string[];
   fileTypeFilter?: RegExp | null;
   nameOnly?: boolean;
-  contentOnly?: boolean;
 }
 
 export interface SearchResult {

@@ -177,20 +177,16 @@ import {
 const finder = createFinder({
   excludeDirectories: ["node_modules", "dist"],
   fileTypeFilter: parseFileTypes("js,ts"),
-  nameOnly: false,
 });
 
 const regex = createSearchRegex("useState", false);
 
-finder.onFound((results) => {
-  console.log("Name matches:", results.byName);
-  console.log("Content matches:", results.byContent);
+finder.onFound((result) => {
+  console.log("Name matches:", result.byName);
+  console.log("Content matches:", result.byContent);
 });
 
-const files = await finder.search(regex, "./src");
-if (!finder.nameOnly) {
-  await finder.searchContent(regex, files);
-}
+finder.searchContent(regex, "./src");
 ```
 
 ## 🛠️ Development

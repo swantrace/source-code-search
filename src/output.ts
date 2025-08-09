@@ -2,11 +2,11 @@ import { spawn } from "node:child_process";
 import { CliOptions, SearchResult } from "./types";
 
 export function formatResults(found: SearchResult, options: CliOptions) {
-  const { nameOnly, contentOnly, verbose } = options;
+  const { nameOnly } = options;
   let totalFiles = 0;
   let output = "";
 
-  if (!contentOnly && found.byName.length > 0) {
+  if (found.byName.length > 0) {
     output += `\n📁 Files matching by name (${found.byName.length}):\n`;
     found.byName.forEach((file) => {
       output += `  📄 ${file}\n`;

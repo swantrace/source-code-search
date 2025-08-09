@@ -16,9 +16,7 @@ OPTIONS:
                       Use "source" for common source code files (default)
                       Use "all" to search all file types
                       (default: source files only)
-  --name-only, -n     Search only in file names
-                      (default: false - search both names and content)
-  --content-only, -c  Search only in file content  
+  --name-only, -n     Search only in file names, skip content search
                       (default: false - search both names and content)
   --ignore-case, -i   Case-insensitive search
                       (default: false - case sensitive)
