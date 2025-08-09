@@ -1,6 +1,6 @@
 {
   "name": "source-code-search",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Command-line tool for searching through source code files",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
