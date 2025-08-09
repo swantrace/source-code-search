@@ -60,9 +60,16 @@ if ! npm run build; then
     exit 1
 fi
 
+echo "📦 Creating package..."
+if ! npm pack; then
+    echo "❌ Error: Failed to create package"
+    exit 1
+fi
+
 echo "🌍 Installing globally..."
-if ! npm link; then
-    echo "❌ Error: Failed to link globally"
+PACKAGE_FILE=$(ls source-code-search-*.tgz | head -n1)
+if ! npm install -g "$PACKAGE_FILE"; then
+    echo "❌ Error: Failed to install globally"
     echo "You may need to run with sudo or check npm permissions"
     exit 1
 fi
@@ -72,13 +79,28 @@ cd /
 rm -rf "$TEMP_DIR"
 
 echo "✅ Installation complete!"
-echo ""
-echo "You can now use:"
-echo "  codesearch 'pattern' [directory]"
-echo "  cs 'pattern' [directory]"
+
+# Check if binaries are accessible
+NPM_BIN_PATH=$(npm config get prefix)/bin
+if ! echo "$PATH" | grep -q "$NPM_BIN_PATH"; then
+    echo ""
+    echo "⚠️  WARNING: npm global bin directory is not in your PATH"
+    echo "   Add this to your shell configuration (.bashrc, .zshrc, etc.):"
+    echo "   export PATH=\"$NPM_BIN_PATH:\$PATH\""
+    echo ""
+    echo "   Or run commands with full path:"
+    echo "   $NPM_BIN_PATH/codesearch 'pattern' [directory]"
+    echo "   $NPM_BIN_PATH/cs 'pattern' [directory]"
+else
+    echo ""
+    echo "You can now use:"
+    echo "  codesearch 'pattern' [directory]"
+    echo "  cs 'pattern' [directory]"
+fi
+
 echo ""
 echo "Example:"
 echo "  cs 'function' ./src"
 echo "  codesearch --help"
 echo ""
-echo "To uninstall: npm unlink -g source-code-search"
+echo "To uninstall: npm uninstall -g source-code-search"
